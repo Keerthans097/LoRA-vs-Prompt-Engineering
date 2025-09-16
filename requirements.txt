@@ -1,0 +1,13 @@
+torch>=2.3
+transformers>=4.41.0
+datasets>=2.18.0
+accelerate>=0.29.0
+peft>=0.11.1
+bitsandbytes>=0.43.0
+evaluate
+scikit-learn
+sentencepiece
+protobuf<5
+bert-score
+matplotlib
+pandas

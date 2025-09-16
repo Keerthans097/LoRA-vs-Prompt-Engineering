@@ -1,0 +1,18 @@
+base_model: "mistralai/Mistral-7B-Instruct-v0.2"  # or meta-llama/Llama-2-7b-chat-hf
+dataset: "pubmed_qa"              # options: pubmed_qa, ag_news, scicite, sst2
+dataset_config: "pqa_labeled"     # for pubmed_qa; set null otherwise
+seeds: [41, 42, 43]
+few_shot_k: 4
+max_new_tokens: 12
+
+lora:
+  r_values: [8, 16]
+  alpha: 16
+  dropout: 0.05
+  lr: 2e-4
+  epochs: 3
+  per_device_bs: 2
+  grad_accum: 4
+  max_length: 512
+
+data_budgets: [128, 512, 1000]    # used for LoRA runs
