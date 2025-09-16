@@ -6,3 +6,4 @@ env/
 hf_cache/
 results/*ckpt*
 logs/
+*.zip
