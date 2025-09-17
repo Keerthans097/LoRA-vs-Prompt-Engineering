@@ -1,4 +1,5 @@
 from datasets import load_dataset, DatasetDict
+import numpy as np
 
 def load_and_prepare_dataset(name: str="pubmed_qa", config: str="pqa_labeled", seed: int=42):
     if name != "pubmed_qa":
@@ -16,6 +17,14 @@ def load_and_prepare_dataset(name: str="pubmed_qa", config: str="pqa_labeled", s
             "train": ds["train"],
             "validation": ds["validation"],
             "test": ds["validation"]
+        })
+    elif "test" not in ds:
+        tmp = ds["train"].train_test_split(test_size=0.2, seed=seed)
+        tr = tmp["train"].train_test_split(test_size=0.1, seed=seed)
+        ds = DatasetDict({
+            "train": tr["train"],
+            "validation": tr["test"],
+            "test": tmp["test"]
         })
 
     spec = {
@@ -40,7 +49,6 @@ def load_and_prepare_dataset(name: str="pubmed_qa", config: str="pqa_labeled", s
     return ds, spec
 
 def build_few_shot_block(ds, spec, k: int, seed: int=42) -> str:
-    import numpy as np
     if k <= 0:
         return ""
     tmpl = spec["templates"]["few_shot_example"]
