@@ -41,5 +41,6 @@ jobs:
 
     - name: Run mini prompt test (CPU)
       run: |
+        export PYTHONPATH=$PYTHONPATH:$(pwd)
         python src/prompt_eval.py           --config configs/config.yaml           --k_shot 0           --seed 41           --max_eval 2           --out results/test_prompt.json
         cat results/test_prompt.json
