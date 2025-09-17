@@ -2,7 +2,7 @@ import os, random, numpy as np
 from typing import Dict, List, Tuple
 from datasets import load_dataset, Dataset, DatasetDict
 
-# Unified label normalization utilities
+# label normalization utilities
 def canonicalize_label(label: str) -> str:
     return label.strip().lower()
 
@@ -18,7 +18,6 @@ def closest_label_from_text(text: str, labels: List[str], default: str=None) -> 
             return lab
     return default or labels[-1]
 
-# --- Dataset registry ---
 def load_and_prepare_dataset(name: str, config: str=None, seed: int=42) -> Tuple[DatasetDict, Dict]:
     """
     Returns (dataset_splits, spec) where:
@@ -59,93 +58,93 @@ def load_and_prepare_dataset(name: str, config: str=None, seed: int=42) -> Tuple
         }
         return ds, spec
 
-    elif name == "ag_news":
-        ds = load_dataset("ag_news")
-        # Fields: text, label (int)
-        labels = ["World","Sports","Business","Sci/Tech"]
-        def map_ag(b):
-            b["text"] = b["text"]
-            b["label_text"] = labels[b["label"]].lower()
-            return b
-        ds = ds.map(map_ag)
-        # Train/Test only; create a small validation from train
-        if "validation" not in ds:
-            ds = ds.rename_column("train","train") if "train" in ds else ds
-            tr = ds["train"].train_test_split(test_size=0.05, seed=seed)
-            ds = DatasetDict({"train": tr["train"], "validation": tr["test"], "test": ds["test"]})
-        spec = {
-            "task_type":"classification",
-            "label_list":[l.lower() for l in labels],
-            "fields":{"text":"text","label":"label_text"},
-            "templates":{
-                "zero_shot": (
-                    "Classify the following news into one of "
-                    "[world, sports, business, sci/tech].\n\n"
-                    "Text: {text}\n"
-                    "Label:"
-                ),
-                "few_shot_example": (
-                    "Text: {text}\n"
-                    "Label: {label}\n"
-                )
-            }
-        }
-        return ds, spec
+    # elif name == "ag_news":
+    #     ds = load_dataset("ag_news")
+    #     ## Fields: text, label (int)
+    #     labels = ["World","Sports","Business","Sci/Tech"]
+    #     def map_ag(b):
+    #         b["text"] = b["text"]
+    #         b["label_text"] = labels[b["label"]].lower()
+    #         return b
+    #     ds = ds.map(map_ag)
+    #     ## Train/Test only; create a small validation from train
+    #     if "validation" not in ds:
+    #         ds = ds.rename_column("train","train") if "train" in ds else ds
+    #         tr = ds["train"].train_test_split(test_size=0.05, seed=seed)
+    #         ds = DatasetDict({"train": tr["train"], "validation": tr["test"], "test": ds["test"]})
+    #     spec = {
+    #         "task_type":"classification",
+    #         "label_list":[l.lower() for l in labels],
+    #         "fields":{"text":"text","label":"label_text"},
+    #         "templates":{
+    #             "zero_shot": (
+    #                 "Classify the following news into one of "
+    #                 "[world, sports, business, sci/tech].\n\n"
+    #                 "Text: {text}\n"
+    #                 "Label:"
+    #             ),
+    #             "few_shot_example": (
+    #                 "Text: {text}\n"
+    #                 "Label: {label}\n"
+    #             )
+    #         }
+    #     }
+    #     return ds, spec
 
-    elif name == "scicite":
-        ds = load_dataset("scicite")
-        labels = ["Background","Method","Result"]
-        def map_sc(b):
-            b["text"] = b["string"]
-            b["label_text"] = labels[b["label"]].lower()
-            return b
-        ds = ds.map(map_sc)
-        spec = {
-            "task_type":"classification",
-            "label_list":[l.lower() for l in labels],
-            "fields":{"text":"text","label":"label_text"},
-            "templates":{
-                "zero_shot": (
-                    "Classify the citation intent into one of "
-                    "[background, method, result].\n\n"
-                    "Citation: {text}\n"
-                    "Label:"
-                ),
-                "few_shot_example": (
-                    "Citation: {text}\n"
-                    "Label: {label}\n"
-                )
-            }
-        }
-        return ds, spec
+    # elif name == "scicite":
+    #     ds = load_dataset("scicite")
+    #     labels = ["Background","Method","Result"]
+    #     def map_sc(b):
+    #         b["text"] = b["string"]
+    #         b["label_text"] = labels[b["label"]].lower()
+    #         return b
+    #     ds = ds.map(map_sc)
+    #     spec = {
+    #         "task_type":"classification",
+    #         "label_list":[l.lower() for l in labels],
+    #         "fields":{"text":"text","label":"label_text"},
+    #         "templates":{
+    #             "zero_shot": (
+    #                 "Classify the citation intent into one of "
+    #                 "[background, method, result].\n\n"
+    #                 "Citation: {text}\n"
+    #                 "Label:"
+    #             ),
+    #             "few_shot_example": (
+    #                 "Citation: {text}\n"
+    #                 "Label: {label}\n"
+    #             )
+    #         }
+    #     }
+    #     return ds, spec
 
-    elif name == "sst2":
-        ds = load_dataset("glue","sst2")
-        def map_sst(b):
-            b["text"] = b["sentence"]
-            b["label_text"] = "positive" if b["label"]==1 else "negative"
-            return b
-        ds = ds.map(map_sst)
-        # glue has train/validation/test (no labels on test); we use validation as test
-        spec = {
-            "task_type":"classification",
-            "label_list":["negative","positive"],
-            "fields":{"text":"text","label":"label_text"},
-            "templates":{
-                "zero_shot": (
-                    "Is the sentiment of the following sentence negative or positive?\n\n"
-                    "Sentence: {text}\n"
-                    "Label:"
-                ),
-                "few_shot_example": (
-                    "Sentence: {text}\n"
-                    "Label: {label}\n"
-                )
-            }
-        }
-        # remap to have test=validation for simplicity
-        ds = DatasetDict({"train": ds["train"], "validation": ds["validation"], "test": ds["validation"]})
-        return ds, spec
+    # elif name == "sst2":
+    #     ds = load_dataset("glue","sst2")
+    #     def map_sst(b):
+    #         b["text"] = b["sentence"]
+    #         b["label_text"] = "positive" if b["label"]==1 else "negative"
+    #         return b
+    #     ds = ds.map(map_sst)
+    #     ## glue has train/validation/test (no labels on test); we use validation as test
+    #     spec = {
+    #         "task_type":"classification",
+    #         "label_list":["negative","positive"],
+    #         "fields":{"text":"text","label":"label_text"},
+    #         "templates":{
+    #             "zero_shot": (
+    #                 "Is the sentiment of the following sentence negative or positive?\n\n"
+    #                 "Sentence: {text}\n"
+    #                 "Label:"
+    #             ),
+    #             "few_shot_example": (
+    #                 "Sentence: {text}\n"
+    #                 "Label: {label}\n"
+    #             )
+    #         }
+    #     }
+    #     ## remap to have test=validation for simplicity
+    #     ds = DatasetDict({"train": ds["train"], "validation": ds["validation"], "test": ds["validation"]})
+    #     return ds, spec
 
     else:
         raise ValueError(f"Unsupported dataset: {name}")
