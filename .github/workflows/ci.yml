@@ -43,10 +43,19 @@ jobs:
       run: |
         mkdir -p ~/.huggingface
         echo -n "${{ secrets.HF_TOKEN }}" > ~/.huggingface/token
-        
+      env:
+        HF_TOKEN: ${{ secrets.HF_TOKEN }}
+      
+
     - name: Run mini prompt test (CPU)
+      env:
+        HF_TOKEN: ${{ secrets.HF_TOKEN }}  
       run: |
         export PYTHONPATH=$PYTHONPATH:$(pwd)
-        python src/prompt_eval.py           --config configs/config.yaml           --k_shot 0           --seed 41           --max_eval 2           --out results/test_prompt.json
-        cat results/test_prompt.json
+        python src/prompt_eval.py \
+        --config configs/config.yaml \
+        --k_shot 0 \
+        --seed 41 \
+        --max_eval 2 \
+        --out results/test_prompt.json
 
